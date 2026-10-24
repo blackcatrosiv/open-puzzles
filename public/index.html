@@ -1,0 +1,964 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Operdle — the daily numbers puzzle</title>
+<meta name="description" content="Operdle is a daily math puzzle. Six numbers, one target, six tries. Combine them with + − × ÷ to hit the target exactly." />
+<meta name="theme-color" content="#0a0b0f" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2315171e'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='%23c6f36b' stroke-width='5'/%3E%3Ccircle cx='32' cy='32' r='6' fill='%23c6f36b'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0a0b0f;
+    --bg-2: #101218;
+    --panel: #15171e;
+    --panel-2: #1b1e27;
+    --line: #262a35;
+    --line-2: #323745;
+    --text: #e8eaf0;
+    --muted: #8a90a0;
+    --dim: #5b6172;
+    --accent: #c6f36b;
+    --accent-ink: #1a2205;
+    --exact: #4ade80;
+    --close: #fbbf24;
+    --far: #38bdf8;
+    --danger: #f87171;
+    --radius: 16px;
+    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: "Space Grotesk", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+  body {
+    min-height: 100dvh;
+    background:
+      radial-gradient(900px 500px at 50% -200px, rgba(198, 243, 107, 0.07), transparent 70%),
+      var(--bg);
+    -webkit-tap-highlight-color: transparent;
+  }
+  button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; touch-action: manipulation; }
+  button:disabled { cursor: not-allowed; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .hidden { display: none !important; }
+
+  .app {
+    max-width: 560px;
+    margin: 0 auto;
+    padding: max(12px, env(safe-area-inset-top)) 16px max(20px, env(safe-area-inset-bottom));
+    display: flex; flex-direction: column; gap: 14px;
+  }
+
+  /* Header */
+  .top { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; padding: 4px 0 2px; }
+  .brand { text-align: center; line-height: 1.1; }
+  .logo { font-weight: 700; font-size: 26px; letter-spacing: -0.03em; display: inline-flex; align-items: center; gap: 8px; }
+  .logo-mark { width: 20px; height: 20px; border-radius: 50%; border: 3px solid var(--accent); display: inline-grid; place-items: center; }
+  .logo-mark::after { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  .meta { display: block; font-size: 12px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 4px; font-family: var(--mono); }
+  .icon-btn {
+    width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center;
+    color: var(--muted); border: 1px solid var(--line); background: var(--panel);
+    transition: color .15s, border-color .15s, background .15s;
+  }
+  .icon-btn:hover { color: var(--text); border-color: var(--line-2); }
+  .icon-btn svg { width: 20px; height: 20px; }
+
+  /* Target card */
+  .target-card {
+    position: relative; overflow: hidden;
+    border-radius: 22px; padding: 16px 18px 16px;
+    background: linear-gradient(180deg, var(--panel-2), var(--panel));
+    border: 1px solid var(--line);
+    display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px;
+  }
+  .target-card::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 22px 22px; opacity: .25;
+    mask-image: radial-gradient(circle at 80% 50%, #000, transparent 70%);
+  }
+  .target-label { font-size: 12px; text-transform: uppercase; letter-spacing: .14em; color: var(--muted); }
+  .target {
+    font-family: var(--mono); font-weight: 800; font-size: clamp(52px, 15vw, 72px); line-height: 1;
+    letter-spacing: -0.04em; color: var(--accent); margin-top: 4px;
+    text-shadow: 0 0 40px rgba(198, 243, 107, .25);
+  }
+  .target-side { position: relative; text-align: right; display: grid; gap: 10px; justify-items: end; }
+  .pips { display: flex; gap: 6px; }
+  .pip { width: 12px; height: 12px; border-radius: 4px; background: var(--line); transition: background .3s, transform .3s; }
+  .pip.exact { background: var(--exact); } .pip.close { background: var(--close); } .pip.far { background: var(--far); }
+  .pip.current { background: transparent; box-shadow: inset 0 0 0 2px var(--accent); }
+  .tries-left { font-size: 13px; color: var(--muted); }
+  .tries-left b { color: var(--text); font-family: var(--mono); }
+
+  /* History */
+  .history { display: grid; gap: 8px; }
+  .row {
+    display: grid; grid-template-columns: 26px 1fr auto; align-items: center; gap: 10px;
+    min-height: 52px; padding: 8px 10px 8px 12px; border-radius: 14px;
+    background: var(--panel); border: 1px solid var(--line);
+    transition: border-color .2s, transform .2s;
+  }
+  .row.empty { background: transparent; border-style: dashed; border-color: var(--line); min-height: 44px; }
+  .row.empty.active { border-color: rgba(198, 243, 107, .45); border-style: solid; background: rgba(198, 243, 107, .03); }
+  .row-n { font-family: var(--mono); font-size: 12px; color: var(--dim); text-align: center; }
+  .row.empty.active .row-n { color: var(--accent); }
+  .row-expr { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; font-family: var(--mono); font-size: 15px; min-width: 0; }
+  .row-hint { font-size: 13px; color: var(--dim); }
+  .row-right { display: flex; align-items: center; gap: 8px; }
+  .row-val { font-family: var(--mono); font-weight: 700; font-size: 17px; }
+  .badge {
+    font-size: 12px; font-weight: 600; padding: 5px 8px; border-radius: 999px; white-space: nowrap;
+    border: 1px solid transparent;
+  }
+  .row.exact { border-color: rgba(74, 222, 128, .5); background: linear-gradient(90deg, rgba(74, 222, 128, .12), var(--panel) 70%); }
+  .row.close { border-color: rgba(251, 191, 36, .35); }
+  .row.far { border-color: rgba(56, 189, 248, .25); }
+  .exact .badge { background: rgba(74, 222, 128, .15); color: var(--exact); border-color: rgba(74, 222, 128, .35); }
+  .close .badge { background: rgba(251, 191, 36, .12); color: var(--close); border-color: rgba(251, 191, 36, .3); }
+  .far .badge { background: rgba(56, 189, 248, .1); color: var(--far); border-color: rgba(56, 189, 248, .25); }
+  .row.enter { animation: rowIn .5s cubic-bezier(.2, .9, .3, 1.3); }
+  @keyframes rowIn { from { transform: scale(.94) translateY(6px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+  .chip {
+    display: inline-grid; place-items: center; min-width: 30px; height: 28px; padding: 0 7px;
+    border-radius: 8px; background: var(--panel-2); border: 1px solid var(--line-2);
+    font-family: var(--mono); font-weight: 700; font-size: 14px;
+  }
+  .sym { color: var(--muted); font-family: var(--mono); font-weight: 700; padding: 0 1px; }
+  .sym.paren { color: var(--dim); }
+
+  /* Builder */
+  .builder { display: grid; gap: 10px; margin-top: 2px; }
+  .formula {
+    border-radius: 16px; border: 1px solid var(--line-2); background: var(--bg-2);
+    padding: 10px 12px; min-height: 66px; display: grid; gap: 4px;
+    transition: border-color .2s;
+  }
+  .formula.ready { border-color: rgba(198, 243, 107, .5); }
+  .formula.error { border-color: rgba(248, 113, 113, .55); }
+  .formula.shake { animation: shake .4s; }
+  @keyframes shake { 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
+  .formula-tokens { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; min-height: 30px; font-size: 17px; }
+  .formula-tokens .chip { height: 30px; font-size: 15px; background: var(--panel-2); border-color: rgba(198, 243, 107, .35); }
+  .formula-tokens .sym { font-size: 18px; }
+  .placeholder { color: var(--dim); font-size: 15px; }
+  .caret { width: 2px; height: 22px; background: var(--accent); border-radius: 2px; animation: blink 1s steps(2) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .formula-status { font-size: 12.5px; color: var(--muted); min-height: 16px; }
+  .formula.ready .formula-status { color: var(--accent); }
+  .formula.error .formula-status { color: var(--danger); }
+
+  .numbers { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+  .tile {
+    position: relative; height: 62px; border-radius: 14px;
+    font-family: var(--mono); font-weight: 800; font-size: 22px;
+    background: linear-gradient(180deg, #252a36, #1c2029);
+    border: 1px solid var(--line-2);
+    box-shadow: 0 3px 0 #0c0d12, inset 0 1px 0 rgba(255,255,255,.06);
+    transition: transform .08s, box-shadow .08s, opacity .2s, background .2s, border-color .2s;
+  }
+  .tile:not(:disabled):hover { border-color: #49506a; }
+  .tile:not(:disabled):active { transform: translateY(3px); box-shadow: 0 0 0 #0c0d12, inset 0 1px 0 rgba(255,255,255,.06); }
+  .tile.big { color: #f5f7fb; background: linear-gradient(180deg, #2c3242, #222735); }
+  .tile:disabled:not(.used) { opacity: .5; }
+  .tile.used {
+    background: rgba(198, 243, 107, .08); border-color: rgba(198, 243, 107, .55); color: var(--accent);
+    box-shadow: inset 0 0 0 1px rgba(198, 243, 107, .15); transform: translateY(3px);
+  }
+  .tile .order {
+    position: absolute; top: -7px; right: -6px; width: 20px; height: 20px; border-radius: 50%;
+    background: var(--accent); color: var(--accent-ink); font-size: 11px; font-weight: 800;
+    display: grid; place-items: center; font-family: var(--mono);
+  }
+  .tile.peek { border-color: var(--close); box-shadow: 0 0 0 2px rgba(251, 191, 36, .35); }
+
+  .ops { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+  .op {
+    height: 50px; border-radius: 12px; font-family: var(--mono); font-size: 22px; font-weight: 700;
+    background: var(--panel); border: 1px solid var(--line); color: var(--text);
+    transition: transform .08s, background .15s, opacity .2s;
+  }
+  .op:not(:disabled):hover { background: var(--panel-2); }
+  .op:not(:disabled):active { transform: scale(.95); }
+  .op:disabled { opacity: .35; }
+  .op.paren { color: var(--muted); }
+
+  .actions { display: grid; grid-template-columns: 1fr 1fr 1.6fr; gap: 8px; }
+  .btn {
+    height: 52px; border-radius: 14px; font-weight: 600; font-size: 15px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    background: var(--panel); border: 1px solid var(--line); color: var(--text);
+    transition: transform .08s, background .15s, opacity .2s;
+  }
+  .btn svg { width: 18px; height: 18px; }
+  .btn:not(:disabled):active { transform: scale(.97); }
+  .btn:disabled { opacity: .4; }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; font-weight: 700; }
+  .btn.primary:not(:disabled):hover { filter: brightness(1.05); }
+  .btn.ghost:not(:disabled):hover { background: var(--panel-2); }
+
+  .kbd-hint { text-align: center; font-size: 12px; color: var(--dim); }
+  .kbd-hint kbd { font-family: var(--mono); font-size: 11px; border: 1px solid var(--line-2); border-radius: 5px; padding: 1px 5px; color: var(--muted); }
+
+  /* Finished panel */
+  .finished {
+    border-radius: 18px; border: 1px solid var(--line); background: var(--panel);
+    padding: 16px; display: grid; gap: 12px; text-align: center;
+  }
+  .finished h2 { margin: 0; font-size: 20px; letter-spacing: -0.01em; }
+  .finished p { margin: 0; color: var(--muted); font-size: 14px; }
+
+  /* Modal */
+  .backdrop {
+    position: fixed; inset: 0; background: rgba(5, 6, 9, .72); backdrop-filter: blur(6px);
+    display: grid; place-items: center; padding: 16px; z-index: 50;
+    animation: fade .2s ease;
+  }
+  @keyframes fade { from { opacity: 0; } }
+  .modal {
+    width: min(460px, 100%); max-height: calc(100dvh - 32px); overflow: auto;
+    background: var(--panel); border: 1px solid var(--line-2); border-radius: 22px;
+    padding: 22px 20px 20px; position: relative;
+    animation: pop .28s cubic-bezier(.2, .9, .3, 1.2);
+  }
+  @keyframes pop { from { transform: translateY(14px) scale(.97); opacity: 0; } }
+  .modal h2 { margin: 0 0 6px; font-size: 24px; letter-spacing: -0.02em; }
+  .modal h3 { margin: 18px 0 10px; font-size: 12px; text-transform: uppercase; letter-spacing: .14em; color: var(--muted); font-weight: 600; }
+  .modal p, .modal li { color: #c3c7d2; font-size: 14.5px; line-height: 1.55; }
+  .modal ul { padding-left: 18px; margin: 8px 0; }
+  .close-x { position: absolute; top: 12px; right: 12px; width: 36px; height: 36px; border-radius: 10px; color: var(--muted); display: grid; place-items: center; }
+  .close-x:hover { background: var(--panel-2); color: var(--text); }
+  .result-emoji { font-size: 42px; line-height: 1; margin-bottom: 8px; }
+  .result-sub { color: var(--muted); margin: 0; }
+  .solution {
+    margin-top: 12px; padding: 10px 12px; border-radius: 12px; background: var(--bg-2); border: 1px solid var(--line);
+    font-family: var(--mono); font-size: 14px; color: var(--text);
+  }
+  .solution span { display: block; font-family: var(--sans); font-size: 11px; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin-bottom: 4px; }
+  .share-preview {
+    margin: 0; padding: 12px 14px; border-radius: 12px; background: var(--bg-2); border: 1px solid var(--line);
+    font-family: var(--mono); font-size: 13.5px; line-height: 1.5; white-space: pre-wrap; color: var(--text);
+  }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; text-align: center; }
+  .stat b { display: block; font-family: var(--mono); font-size: 26px; font-weight: 800; }
+  .stat span { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+  .dist { display: grid; gap: 5px; }
+  .dist-row { display: grid; grid-template-columns: 16px 1fr; align-items: center; gap: 8px; font-family: var(--mono); font-size: 13px; color: var(--muted); }
+  .dist-bar { height: 22px; min-width: 26px; border-radius: 6px; background: var(--line-2); color: var(--text); display: flex; justify-content: flex-end; align-items: center; padding: 0 8px; font-weight: 700; font-size: 12px; transition: width .6s cubic-bezier(.2,.8,.2,1); }
+  .dist-bar.hl { background: var(--accent); color: var(--accent-ink); }
+  .modal-footer { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px; align-items: center; }
+  .countdown { text-align: left; }
+  .countdown span { display: block; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .12em; }
+  .countdown b { font-family: var(--mono); font-size: 24px; }
+  .legend { display: grid; gap: 8px; margin: 10px 0; }
+  .legend-item { display: grid; grid-template-columns: 32px 1fr; gap: 10px; align-items: center; font-size: 14px; color: #c3c7d2; }
+  .legend-item .sw { width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; font-size: 16px; }
+  .sw.exact { background: rgba(74, 222, 128, .15); border: 1px solid rgba(74, 222, 128, .4); }
+  .sw.close { background: rgba(251, 191, 36, .12); border: 1px solid rgba(251, 191, 36, .35); }
+  .sw.far { background: rgba(56, 189, 248, .1); border: 1px solid rgba(56, 189, 248, .3); }
+  .example { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; padding: 10px; border-radius: 12px; background: var(--bg-2); border: 1px solid var(--line); }
+
+  /* Toast */
+  .toast {
+    position: fixed; left: 50%; top: max(16px, env(safe-area-inset-top)); transform: translate(-50%, -20px);
+    background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 12px; font-weight: 600; font-size: 14px;
+    opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 80; max-width: calc(100% - 32px); text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  /* Confetti */
+  .confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 60; }
+  .confetti i { position: absolute; top: -12px; width: 8px; height: 14px; border-radius: 2px; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translate3d(var(--dx), 110vh, 0) rotate(var(--rot)); } }
+
+  @media (max-width: 420px) {
+    .app { padding-left: 12px; padding-right: 12px; gap: 12px; }
+    .numbers { grid-template-columns: repeat(3, 1fr); }
+    .tile { height: 56px; font-size: 22px; }
+    .op { height: 48px; }
+    .row { grid-template-columns: 20px 1fr auto; gap: 8px; padding-left: 8px; }
+    .row-right { flex-direction: column; align-items: flex-end; gap: 4px; }
+    .row-expr { font-size: 14px; }
+    .chip { min-width: 26px; height: 26px; font-size: 13px; padding: 0 5px; }
+    .kbd-hint { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <button class="icon-btn" id="helpBtn" aria-label="How to play">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M9.5 9.2a2.6 2.6 0 0 1 5 .8c0 1.8-2.5 2.3-2.5 3.8"/><circle cx="12" cy="17.2" r=".6" fill="currentColor"/></svg>
+    </button>
+    <div class="brand">
+      <span class="logo"><span class="logo-mark" aria-hidden="true"></span>Operdle</span>
+      <span class="meta" id="puzzleMeta"></span>
+    </div>
+    <button class="icon-btn" id="statsBtn" aria-label="Statistics">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 20V11M12 20V4M19 20v-6"/></svg>
+    </button>
+  </header>
+
+  <section class="target-card" aria-label="Target number">
+    <div>
+      <div class="target-label">Today's target</div>
+      <div class="target" id="target">000</div>
+    </div>
+    <div class="target-side">
+      <div class="pips" id="pips" aria-hidden="true"></div>
+      <div class="tries-left" id="triesLeft"></div>
+    </div>
+  </section>
+
+  <section class="history" id="history" aria-label="Attempts" aria-live="polite"></section>
+
+  <section class="builder" id="builder" aria-label="Expression builder">
+    <div class="formula" id="formula">
+      <div class="formula-tokens" id="formulaTokens"></div>
+      <div class="formula-status" id="formulaStatus"></div>
+    </div>
+    <div class="numbers" id="numbers"></div>
+    <div class="ops" id="ops"></div>
+    <div class="actions">
+      <button class="btn ghost" id="undoBtn" aria-label="Undo last token">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 5H9l-6 7 6 7h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1z"/><path d="M17 9l-6 6M11 9l6 6"/></svg>
+        Undo
+      </button>
+      <button class="btn ghost" id="clearBtn">Clear</button>
+      <button class="btn primary" id="submitBtn">Submit</button>
+    </div>
+    <div class="kbd-hint">Keyboard: type numbers &amp; <kbd>+</kbd> <kbd>-</kbd> <kbd>*</kbd> <kbd>/</kbd> <kbd>(</kbd> <kbd>)</kbd> · <kbd>⌫</kbd> undo · <kbd>Esc</kbd> clear · <kbd>Enter</kbd> submit</div>
+  </section>
+
+  <section class="finished hidden" id="finished">
+    <h2 id="finishedTitle"></h2>
+    <p id="finishedSub"></p>
+    <button class="btn primary" id="viewResultsBtn">View results &amp; share</button>
+  </section>
+</div>
+
+<!-- Help modal -->
+<div class="backdrop hidden" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+  <div class="modal">
+    <button class="close-x" data-close aria-label="Close">✕</button>
+    <h2 id="helpTitle">How to play</h2>
+    <p>Hit the <b style="color:var(--accent)">target</b> using the six numbers and <b>+ − × ÷</b>. You get six tries, and there's a new puzzle every day.</p>
+    <ul>
+      <li>Use any of the six numbers, but each one <b>only once</b> per try.</li>
+      <li>Use brackets to control the order of operations.</li>
+      <li>Division has to come out to a whole number at every step.</li>
+      <li>No negative numbers along the way.</li>
+    </ul>
+    <h3>Example</h3>
+    <div class="example">
+      <span class="sym paren">(</span><span class="chip">75</span><span class="sym">+</span><span class="chip">6</span><span class="sym paren">)</span><span class="sym">×</span><span class="chip">4</span><span class="sym">−</span><span class="chip">2</span>
+      <span class="sym">=</span><b style="font-family:var(--mono)">322</b>
+    </div>
+    <h3>Feedback</h3>
+    <div class="legend">
+      <div class="legend-item"><span class="sw exact">🎯</span><span><b>Exact</b>: you hit the target. You win!</span></div>
+      <div class="legend-item"><span class="sw close">🔥</span><span><b>Close</b>: within 10 points or 5% of the target, whichever is bigger.</span></div>
+      <div class="legend-item"><span class="sw far">🧊</span><span><b>Far</b>: further off. The badge shows how far, like “+42” (over) or “−17” (under).</span></div>
+    </div>
+    <button class="btn primary" data-close style="width:100%;margin-top:8px">Let's play</button>
+  </div>
+</div>
+
+<!-- Results / stats modal -->
+<div class="backdrop hidden" id="resultsModal" role="dialog" aria-modal="true" aria-labelledby="resultsTitle">
+  <div class="modal">
+    <button class="close-x" data-close aria-label="Close">✕</button>
+    <div id="resultBlock">
+      <div class="result-emoji" id="resultEmoji"></div>
+      <h2 id="resultsTitle"></h2>
+      <p class="result-sub" id="resultSub"></p>
+      <div class="solution" id="solution"></div>
+      <h3>Your result</h3>
+      <pre class="share-preview" id="sharePreview"></pre>
+    </div>
+    <h3 id="statsHeading">Statistics</h3>
+    <div class="stats" id="stats"></div>
+    <h3>Solved in</h3>
+    <div class="dist" id="dist"></div>
+    <div class="modal-footer">
+      <div class="countdown"><span>Next puzzle</span><b id="countdown">--:--:--</b></div>
+      <button class="btn primary" id="copyBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+        Copy Results
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(() => {
+  "use strict";
+
+  /* ---------- Constants & helpers ---------- */
+  const MAX_ROWS = 6;
+  const LAUNCH_DATE = "2026-10-24"; // Puzzle #1
+  const STORE_PREFIX = "operand:v1:";
+  const $ = (id) => document.getElementById(id);
+  const pad = (n) => String(n).padStart(2, "0");
+  const OP_DISPLAY = { "+": "+", "-": "−", "*": "×", "/": "÷" };
+
+  function localDateStr(d = new Date()) {
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  }
+  function dateToUTC(s) {
+    const [y, m, d] = s.split("-").map(Number);
+    return Date.UTC(y, m - 1, d);
+  }
+  function shiftDate(s, days) {
+    const d = new Date(dateToUTC(s) + days * 86400000);
+    return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
+  }
+  function puzzleNumber(s) {
+    return Math.max(1, Math.round((dateToUTC(s) - dateToUTC(LAUNCH_DATE)) / 86400000) + 1);
+  }
+  const fmtSigned = (n, minus = "−") => (n > 0 ? `+${n}` : n < 0 ? `${minus}${Math.abs(n)}` : "0");
+
+  /* ---------- Seeded PRNG (xmur3 hash → mulberry32) ---------- */
+  function xmur3(str) {
+    let h = 1779033703 ^ str.length;
+    for (let i = 0; i < str.length; i++) {
+      h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    return () => {
+      h = Math.imul(h ^ (h >>> 16), 2246822507);
+      h = Math.imul(h ^ (h >>> 13), 3266489909);
+      return (h ^= h >>> 16) >>> 0;
+    };
+  }
+  function mulberry32(a) {
+    return () => {
+      a |= 0; a = (a + 0x6d2b79f5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  /* ---------- Daily puzzle generation ----------
+     Numbers follow the Countdown recipe: a few "large" numbers from
+     {25, 50, 75, 100} and the rest from two decks of 1–10. The target is
+     built by randomly combining a subset of the numbers with valid
+     operations, so every daily puzzle is guaranteed to be solvable. */
+  function generatePuzzle(dateStr) {
+    const rand = mulberry32(xmur3("operand:" + dateStr)());
+    const shuffle = (arr) => {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(rand() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    };
+    const r = rand();
+    const nLarge = r < 0.45 ? 1 : r < 0.85 ? 2 : 3;
+    const larges = shuffle([25, 50, 75, 100]).slice(0, nLarge);
+    const smallDeck = [];
+    for (let n = 1; n <= 10; n++) smallDeck.push(n, n);
+    const smalls = shuffle(smallDeck).slice(0, 6 - nLarge);
+    const numbers = [...smalls.sort((a, b) => a - b), ...larges.sort((a, b) => a - b)];
+
+    let fallback = null;
+    for (let tries = 0; tries < 6000; tries++) {
+      const order = shuffle([0, 1, 2, 3, 4, 5]);
+      const k = 3 + Math.floor(rand() * 4); // use 3–6 numbers
+      let val = numbers[order[0]];
+      let expr = String(val);
+      for (let j = 1; j < k; j++) {
+        const n = numbers[order[j]];
+        const moves = [];
+        moves.push(() => [val + n, `${expr} + ${n}`]);
+        if (val - n > 0) moves.push(() => [val - n, `${expr} − ${n}`]);
+        if (n - val > 0) moves.push(() => [n - val, `${n} − (${expr})`]);
+        if (n > 1 && val > 1) moves.push(() => [val * n, `(${expr}) × ${n}`], () => [val * n, `(${expr}) × ${n}`]);
+        if (n > 1 && val % n === 0) moves.push(() => [val / n, `(${expr}) ÷ ${n}`]);
+        if (val > 1 && n % val === 0 && n !== val) moves.push(() => [n / val, `${n} ÷ (${expr})`]);
+        [val, expr] = moves[Math.floor(rand() * moves.length)]();
+      }
+      if (val < 100 || val > 999 || numbers.includes(val)) continue;
+      const solution = tidy(expr);
+      if (val % 25 === 0 && rand() < 0.8) { fallback = fallback || { target: val, solution }; continue; }
+      return { numbers, target: val, solution };
+    }
+    if (fallback) return { numbers, ...fallback };
+    // Practically unreachable: guaranteed-valid fallback.
+    const [a, b, c] = numbers.slice(3);
+    return { numbers, target: a * c + b, solution: `${a} × ${c} + ${b}` };
+  }
+  // Drop redundant brackets around a single number, e.g. "(7) × 3" → "7 × 3"
+  function tidy(expr) {
+    let prev;
+    do { prev = expr; expr = expr.replace(/\((\d+)\)/g, "$1"); } while (expr !== prev);
+    return expr;
+  }
+
+  /* ---------- Expression evaluation ----------
+     Tokens: {t:"n", i} number tile index · {t:"op", v} · {t:"lp"} · {t:"rp"}.
+     Standard precedence via recursive descent; every intermediate result
+     is checked against the rules. */
+  class RuleError extends Error {}
+  function evaluate(tokens, numbers) {
+    let pos = 0;
+    const peek = () => tokens[pos];
+    const apply = (l, op, r) => {
+      switch (op) {
+        case "+": return l + r;
+        case "-":
+          if (r > l) throw new RuleError(`${l} − ${r} goes negative`);
+          return l - r;
+        case "*": return l * r;
+        case "/":
+          if (r === 0) throw new RuleError("Can't divide by zero");
+          if (l % r !== 0) throw new RuleError(`${l} ÷ ${r} isn't a whole number`);
+          return l / r;
+      }
+    };
+    function expr() {
+      let v = term();
+      while (peek() && peek().t === "op" && (peek().v === "+" || peek().v === "-")) {
+        const op = tokens[pos++].v;
+        v = apply(v, op, term());
+      }
+      return v;
+    }
+    function term() {
+      let v = factor();
+      while (peek() && peek().t === "op" && (peek().v === "*" || peek().v === "/")) {
+        const op = tokens[pos++].v;
+        v = apply(v, op, factor());
+      }
+      return v;
+    }
+    function factor() {
+      const tk = tokens[pos++];
+      if (!tk) throw new RuleError("Finish the expression");
+      if (tk.t === "n") return numbers[tk.i];
+      if (tk.t === "lp") {
+        const v = expr();
+        const c = tokens[pos++];
+        if (!c || c.t !== "rp") throw new RuleError("Close your brackets");
+        return v;
+      }
+      throw new RuleError("That expression doesn't parse");
+    }
+    const value = expr();
+    if (pos < tokens.length) throw new RuleError("That expression doesn't parse");
+    return value;
+  }
+
+  /* ---------- Persistence ---------- */
+  const store = {
+    get(key, fallback) {
+      try { const v = localStorage.getItem(STORE_PREFIX + key); return v ? JSON.parse(v) : fallback; }
+      catch { return fallback; }
+    },
+    set(key, value) {
+      try { localStorage.setItem(STORE_PREFIX + key, JSON.stringify(value)); } catch {}
+    },
+  };
+  const defaultStats = () => ({ played: 0, wins: 0, streak: 0, maxStreak: 0, lastWin: null, dist: [0, 0, 0, 0, 0, 0] });
+
+  /* ---------- State ---------- */
+  const TODAY = localDateStr();
+  const PUZZLE_NO = puzzleNumber(TODAY);
+  const P = generatePuzzle(TODAY);
+  const TOLERANCE = Math.max(10, Math.round(P.target * 0.05));
+  let game = store.get("game:" + TODAY, null) || { attempts: [], status: "playing", counted: false };
+  let stats = store.get("stats", defaultStats());
+  let tokens = [];
+  let lastAddedRow = -1;
+
+  function classify(value) {
+    const diff = value - P.target;
+    const ad = Math.abs(diff);
+    return { diff, kind: ad === 0 ? "exact" : ad <= TOLERANCE ? "close" : "far" };
+  }
+
+  function builderState() {
+    let depth = 0;
+    for (const tk of tokens) { if (tk.t === "lp") depth++; else if (tk.t === "rp") depth--; }
+    const last = tokens[tokens.length - 1];
+    const afterValue = !!last && (last.t === "n" || last.t === "rp");
+    const playing = game.status === "playing";
+    return {
+      depth,
+      used: new Set(tokens.filter((t) => t.t === "n").map((t) => t.i)),
+      canNum: playing && !afterValue,
+      canOp: playing && afterValue,
+      canLp: playing && !afterValue,
+      canRp: playing && afterValue && depth > 0,
+      complete: tokens.length > 0 && afterValue && depth === 0,
+      reason: !tokens.length ? "Build an expression first" : depth > 0 && afterValue ? "Close your brackets" : "Finish the expression",
+    };
+  }
+
+  /* ---------- Rendering ---------- */
+  function exprHTML(toks) {
+    return toks.map((tk) => {
+      if (tk.t === "n") return `<span class="chip">${P.numbers[tk.i]}</span>`;
+      if (tk.t === "op") return `<span class="sym">${OP_DISPLAY[tk.v]}</span>`;
+      return `<span class="sym paren">${tk.t === "lp" ? "(" : ")"}</span>`;
+    }).join("");
+  }
+
+  function renderStatic() {
+    const d = new Date(dateToUTC(TODAY));
+    const label = d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" });
+    $("puzzleMeta").textContent = `#${PUZZLE_NO} · ${label}`;
+    $("target").textContent = P.target;
+
+    $("numbers").innerHTML = P.numbers.map((n, i) =>
+      `<button class="tile${n >= 25 ? " big" : ""}" data-i="${i}" aria-label="Number ${n}">${n}</button>`).join("");
+    const ops = [["+", "op"], ["-", "op"], ["*", "op"], ["/", "op"], ["(", "lp"], [")", "rp"]];
+    $("ops").innerHTML = ops.map(([v, t]) =>
+      `<button class="op${t !== "op" ? " paren" : ""}" data-t="${t}" data-v="${v}" aria-label="${t === "op" ? OP_DISPLAY[v] : v}">${t === "op" ? OP_DISPLAY[v] : v}</button>`).join("");
+  }
+
+  function renderHistory() {
+    const rows = [];
+    for (let r = 0; r < MAX_ROWS; r++) {
+      const a = game.attempts[r];
+      if (a) {
+        const used = a.tokens.filter((t) => t.t === "n").map((t) => t.i).join(",");
+        const badge = a.kind === "exact" ? "🎯 Exact" : `${a.kind === "close" ? "🔥" : "🧊"} Off by ${fmtSigned(a.diff)}`;
+        rows.push(`<div class="row ${a.kind}${r === lastAddedRow ? " enter" : ""}" data-used="${used}">
+          <span class="row-n">${r + 1}</span>
+          <span class="row-expr">${exprHTML(a.tokens)}</span>
+          <span class="row-right"><span class="row-val">${a.value}</span><span class="badge">${badge}</span></span>
+        </div>`);
+      } else {
+        const active = game.status === "playing" && r === game.attempts.length;
+        rows.push(`<div class="row empty${active ? " active" : ""}">
+          <span class="row-n">${r + 1}</span>
+          <span class="row-hint">${active ? "Your next try" : ""}</span><span></span>
+        </div>`);
+      }
+    }
+    $("history").innerHTML = rows.join("");
+    lastAddedRow = -1;
+
+    $("pips").innerHTML = Array.from({ length: MAX_ROWS }, (_, r) => {
+      const a = game.attempts[r];
+      const cls = a ? a.kind : game.status === "playing" && r === game.attempts.length ? "current" : "";
+      return `<span class="pip ${cls}"></span>`;
+    }).join("");
+    const left = MAX_ROWS - game.attempts.length;
+    $("triesLeft").innerHTML = game.status === "won" ? "Solved!" : game.status === "lost" ? "Out of tries" : `<b>${left}</b> ${left === 1 ? "try" : "tries"} left`;
+  }
+
+  function renderBuilder() {
+    const st = builderState();
+    const order = tokens.filter((t) => t.t === "n").map((t) => t.i);
+    document.querySelectorAll(".tile").forEach((el) => {
+      const i = Number(el.dataset.i);
+      const used = st.used.has(i);
+      el.classList.toggle("used", used);
+      el.disabled = used || !st.canNum;
+      el.innerHTML = `${P.numbers[i]}${used ? `<span class="order">${order.indexOf(i) + 1}</span>` : ""}`;
+    });
+    document.querySelectorAll(".op").forEach((el) => {
+      const t = el.dataset.t;
+      el.disabled = t === "op" ? !st.canOp : t === "lp" ? !st.canLp : !st.canRp;
+    });
+
+    const f = $("formula");
+    $("formulaTokens").innerHTML = tokens.length
+      ? exprHTML(tokens) + '<span class="caret"></span>'
+      : '<span class="placeholder">Tap numbers and operators to build an expression</span><span class="caret"></span>';
+
+    let status = "", cls = "";
+    if (st.complete) {
+      try { evaluate(tokens, P.numbers); status = "✓ Looks good. Submit when you're ready."; cls = "ready"; }
+      catch (e) { status = e.message; cls = "error"; }
+    } else if (tokens.length) {
+      status = st.depth > 0 ? `${st.depth} open bracket${st.depth > 1 ? "s" : ""}` : "Keep going…";
+    } else {
+      status = `Close counts if you're within ${TOLERANCE} of the target`;
+    }
+    f.classList.toggle("ready", cls === "ready");
+    f.classList.toggle("error", cls === "error");
+    $("formulaStatus").textContent = status;
+
+    $("undoBtn").disabled = !tokens.length || game.status !== "playing";
+    $("clearBtn").disabled = !tokens.length || game.status !== "playing";
+    $("submitBtn").disabled = game.status !== "playing" || cls !== "ready";
+  }
+
+  function renderEnd() {
+    const over = game.status !== "playing";
+    $("builder").classList.toggle("hidden", over);
+    $("finished").classList.toggle("hidden", !over);
+    if (!over) return;
+    if (game.status === "won") {
+      $("finishedTitle").textContent = `🎯 Solved in ${game.attempts.length}/${MAX_ROWS}`;
+      $("finishedSub").textContent = "Come back tomorrow for a new target.";
+    } else {
+      const best = closestAttempt();
+      $("finishedTitle").textContent = "Out of tries";
+      $("finishedSub").textContent = `Closest: ${best.value} (off by ${fmtSigned(best.diff)}). A new puzzle arrives at midnight.`;
+    }
+  }
+
+  function render() { renderHistory(); renderBuilder(); renderEnd(); }
+
+  /* ---------- Actions ---------- */
+  function push(tk) {
+    const st = builderState();
+    const ok = tk.t === "n" ? st.canNum && !st.used.has(tk.i)
+      : tk.t === "op" ? st.canOp : tk.t === "lp" ? st.canLp : st.canRp;
+    if (!ok) return false;
+    tokens.push(tk);
+    renderBuilder();
+    return true;
+  }
+  function undo() { if (tokens.length && game.status === "playing") { tokens.pop(); renderBuilder(); } }
+  function clearExpr() { if (game.status === "playing") { tokens = []; renderBuilder(); } }
+
+  function shake(msg) {
+    const f = $("formula");
+    f.classList.remove("shake"); void f.offsetWidth; f.classList.add("shake");
+    if (msg) toast(msg);
+  }
+
+  function submit() {
+    if (game.status !== "playing") return;
+    const st = builderState();
+    if (!st.complete) return shake(st.reason);
+    let value;
+    try { value = evaluate(tokens, P.numbers); }
+    catch (e) { return shake(e.message); }
+
+    const { diff, kind } = classify(value);
+    game.attempts.push({ tokens: tokens.slice(), value, diff, kind });
+    lastAddedRow = game.attempts.length - 1;
+    tokens = [];
+    if (kind === "exact") game.status = "won";
+    else if (game.attempts.length >= MAX_ROWS) game.status = "lost";
+
+    if (game.status !== "playing" && !game.counted) recordStats();
+    store.set("game:" + TODAY, game);
+    render();
+
+    if (game.status === "won") {
+      confetti();
+      setTimeout(() => openResults(true), 1300);
+    } else if (game.status === "lost") {
+      setTimeout(() => openResults(true), 900);
+    } else {
+      toast(kind === "close" ? `🔥 Close! Off by ${fmtSigned(diff)}` : `🧊 Off by ${fmtSigned(diff)}`);
+    }
+  }
+
+  function recordStats() {
+    stats.played++;
+    if (game.status === "won") {
+      stats.wins++;
+      stats.dist[game.attempts.length - 1]++;
+      stats.streak = stats.lastWin === shiftDate(TODAY, -1) ? stats.streak + 1 : 1;
+      stats.lastWin = TODAY;
+      stats.maxStreak = Math.max(stats.maxStreak, stats.streak);
+    } else {
+      stats.streak = 0;
+    }
+    game.counted = true;
+    store.set("stats", stats);
+  }
+  function currentStreak() {
+    return stats.lastWin === TODAY || stats.lastWin === shiftDate(TODAY, -1) ? stats.streak : 0;
+  }
+  function closestAttempt() {
+    return game.attempts.reduce((best, a) => (!best || Math.abs(a.diff) < Math.abs(best.diff) ? a : best), null);
+  }
+
+  /* ---------- Sharing ---------- */
+  function shareText() {
+    const score = game.status === "won" ? `${game.attempts.length}/${MAX_ROWS}` : `X/${MAX_ROWS}`;
+    const lines = [`Operdle #${PUZZLE_NO} · ${TODAY}`, `🎯 ${P.target} · ${score}`, ""];
+    for (const a of game.attempts) {
+      const usedCount = a.tokens.filter((t) => t.t === "n").length;
+      const sq = a.kind === "exact" ? "🟩" : a.kind === "close" ? "🟨" : "🟦";
+      const squares = sq.repeat(usedCount) + "⬛".repeat(6 - usedCount);
+      lines.push(`${squares} ${a.kind === "exact" ? "🎯" : fmtSigned(a.diff, "-")}`);
+    }
+    lines.push("", location.origin + location.pathname.replace(/index\.html$/, ""));
+    return lines.join("\n");
+  }
+
+  async function copyResults() {
+    const text = shareText();
+    let ok = false;
+    try { await navigator.clipboard.writeText(text); ok = true; }
+    catch {
+      const ta = document.createElement("textarea");
+      ta.value = text; ta.setAttribute("readonly", ""); ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      try { ok = document.execCommand("copy"); } catch {}
+      ta.remove();
+    }
+    toast(ok ? "Results copied to clipboard" : "Couldn't copy. Select the text above instead");
+  }
+
+  /* ---------- Modals ---------- */
+  let countdownTimer = null;
+  function openModal(id) {
+    $(id).classList.remove("hidden");
+    const first = $(id).querySelector(".btn.primary, .close-x");
+    if (first) first.focus({ preventScroll: true });
+  }
+  function closeModal(el) {
+    el.classList.add("hidden");
+    if (el.id === "resultsModal") clearInterval(countdownTimer);
+  }
+
+  function openResults() {
+    const over = game.status !== "playing";
+    $("resultBlock").classList.toggle("hidden", !over);
+    $("copyBtn").classList.toggle("hidden", !over);
+    if (over) {
+      const won = game.status === "won";
+      const n = game.attempts.length;
+      $("resultEmoji").textContent = won ? (n === 1 ? "🏆" : n <= 3 ? "🎯" : "✅") : "🧮";
+      $("resultsTitle").textContent = won
+        ? (n === 1 ? "First try. Bullseye!" : n <= 3 ? "Sharp work!" : "Got there!")
+        : "So close";
+      const best = closestAttempt();
+      $("resultSub").textContent = won
+        ? `You hit ${P.target} in ${n} ${n === 1 ? "try" : "tries"}.`
+        : `Your closest was ${best.value}, off by ${fmtSigned(best.diff)}.`;
+      $("solution").innerHTML = `<span>${won ? "Another route" : "One way to get there"}</span>${P.solution} = ${P.target}`;
+      $("sharePreview").textContent = shareText();
+    }
+    const winPct = stats.played ? Math.round((stats.wins / stats.played) * 100) : 0;
+    $("stats").innerHTML = [
+      [stats.played, "Played"], [winPct, "Win %"], [currentStreak(), "Streak"], [stats.maxStreak, "Best"],
+    ].map(([v, l]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
+    const maxD = Math.max(1, ...stats.dist);
+    $("dist").innerHTML = stats.dist.map((c, i) => {
+      const hl = game.status === "won" && game.attempts.length === i + 1;
+      return `<div class="dist-row"><span>${i + 1}</span><div class="dist-bar${hl ? " hl" : ""}" style="width:${Math.max(8, (c / maxD) * 100)}%">${c}</div></div>`;
+    }).join("");
+
+    const tick = () => {
+      const now = new Date();
+      const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+      const s = Math.max(0, Math.floor((next - now) / 1000));
+      $("countdown").textContent = `${pad(Math.floor(s / 3600))}:${pad(Math.floor((s % 3600) / 60))}:${pad(s % 60)}`;
+      if (s === 0) location.reload();
+    };
+    tick();
+    clearInterval(countdownTimer);
+    countdownTimer = setInterval(tick, 1000);
+    openModal("resultsModal");
+  }
+
+  /* ---------- Toast & confetti ---------- */
+  let toastTimer = null;
+  function toast(msg) {
+    const t = $("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove("show"), 1800);
+  }
+  function confetti() {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const wrap = document.createElement("div");
+    wrap.className = "confetti";
+    const colors = ["#c6f36b", "#4ade80", "#fbbf24", "#38bdf8", "#f472b6", "#e8eaf0"];
+    for (let i = 0; i < 90; i++) {
+      const p = document.createElement("i");
+      p.style.left = Math.random() * 100 + "vw";
+      p.style.background = colors[i % colors.length];
+      p.style.setProperty("--dx", (Math.random() * 200 - 100) + "px");
+      p.style.setProperty("--rot", (Math.random() * 900 - 450) + "deg");
+      p.style.animationDuration = 1.8 + Math.random() * 1.6 + "s";
+      p.style.animationDelay = Math.random() * 0.4 + "s";
+      wrap.appendChild(p);
+    }
+    document.body.appendChild(wrap);
+    setTimeout(() => wrap.remove(), 4200);
+  }
+
+  /* ---------- Events ---------- */
+  $("numbers").addEventListener("click", (e) => {
+    const b = e.target.closest(".tile");
+    if (b && !b.disabled) push({ t: "n", i: Number(b.dataset.i) });
+  });
+  $("ops").addEventListener("click", (e) => {
+    const b = e.target.closest(".op");
+    if (!b || b.disabled) return;
+    push(b.dataset.t === "op" ? { t: "op", v: b.dataset.v } : { t: b.dataset.t });
+  });
+  $("undoBtn").addEventListener("click", undo);
+  $("clearBtn").addEventListener("click", clearExpr);
+  $("submitBtn").addEventListener("click", submit);
+  $("helpBtn").addEventListener("click", () => openModal("helpModal"));
+  $("statsBtn").addEventListener("click", openResults);
+  $("viewResultsBtn").addEventListener("click", openResults);
+  $("copyBtn").addEventListener("click", copyResults);
+  document.querySelectorAll(".backdrop").forEach((bd) => {
+    bd.addEventListener("click", (e) => {
+      if (e.target === bd || e.target.closest("[data-close]")) closeModal(bd);
+    });
+  });
+
+  // Hovering/pressing a past attempt highlights the tiles it used
+  const peek = (rowEl, on) => {
+    if (!rowEl || !rowEl.dataset.used) return;
+    const ids = new Set(rowEl.dataset.used.split(",").map(Number));
+    document.querySelectorAll(".tile").forEach((t) => t.classList.toggle("peek", on && ids.has(Number(t.dataset.i))));
+  };
+  $("history").addEventListener("pointerover", (e) => peek(e.target.closest(".row"), true));
+  $("history").addEventListener("pointerout", (e) => peek(e.target.closest(".row"), false));
+
+  // Keyboard: typed digits are matched against unused tile values
+  let digitBuf = "", digitTimer = null;
+  function flushDigits(force) {
+    clearTimeout(digitTimer);
+    const st = builderState();
+    const avail = P.numbers.map((n, i) => ({ n: String(n), i })).filter((x) => !st.used.has(x.i));
+    const exact = avail.find((x) => x.n === digitBuf);
+    const longer = avail.some((x) => x.n.length > digitBuf.length && x.n.startsWith(digitBuf));
+    if (exact && (force || !longer)) { push({ t: "n", i: exact.i }); digitBuf = ""; return; }
+    if (!longer || force) { if (!exact && digitBuf) shake(`${digitBuf} isn't available`); digitBuf = ""; return; }
+    digitTimer = setTimeout(() => flushDigits(true), 700);
+  }
+  document.addEventListener("keydown", (e) => {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    const open = document.querySelector(".backdrop:not(.hidden)");
+    if (open) { if (e.key === "Escape") closeModal(open); return; }
+    if (game.status !== "playing") return;
+    const k = e.key;
+    if (/^[0-9]$/.test(k)) { digitBuf += k; flushDigits(false); e.preventDefault(); return; }
+    if (digitBuf) flushDigits(true);
+    const map = { "+": { t: "op", v: "+" }, "-": { t: "op", v: "-" }, "*": { t: "op", v: "*" }, x: { t: "op", v: "*" },
+      "/": { t: "op", v: "/" }, "(": { t: "lp" }, ")": { t: "rp" } };
+    if (map[k]) { push(map[k]); e.preventDefault(); }
+    else if (k === "Backspace") { undo(); e.preventDefault(); }
+    else if (k === "Escape") clearExpr();
+    else if (k === "Enter") { submit(); e.preventDefault(); }
+  });
+
+  /* ---------- Boot ---------- */
+  renderStatic();
+  render();
+  if (!store.get("seenHelp", false)) { openModal("helpModal"); store.set("seenHelp", true); }
+})();
+</script>
+</body>
+</html>
