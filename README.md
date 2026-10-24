@@ -1,6 +1,10 @@
-# Operdle
+# Open-Puzzles
 
-Operdle is a daily math puzzle in the spirit of Wordle and the Countdown numbers game. Each day everyone gets the same six numbers and the same target between 100 and 999. Players have six tries to build an arithmetic expression (+ − × ÷ and brackets) that hits the target exactly. 
+Open-Puzzles is a daily math puzzle site in the spirit of Wordle and the Countdown numbers game. 
+
+# Operdle: 
+
+Each day everyone gets the same six numbers and the same target between 100 and 999. Players have six tries to build an arithmetic expression (+ − × ÷ and brackets) that hits the target exactly. 
 
 ## Features
 
