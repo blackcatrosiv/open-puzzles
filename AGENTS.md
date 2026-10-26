@@ -1,7 +1,6 @@
 # AGENTS.md
 
 ## Architecture
-- `public/index.html` is the whole app: markup, `<style>`, and one IIFE `<script>`. It's a deliberate single-file design with no framework, no bundler and no build step. Keep it that way unless the owner asks otherwise.
 - `netlify.toml` publishes `public/`. No functions and no server.
 
 ## Script layout (in order)
