@@ -18,7 +18,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2315171e'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='%23c6f36b' stroke-width='5'/%3E%3Ccircle cx='32' cy='32' r='6' fill='%23c6f36b'/%3E%3C/svg%3E" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500..900&family=Instrument+Sans:wght@400..700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
 <style>
   :root {
     --bg: #0a0b0f;
@@ -38,7 +38,8 @@
     --danger: #f87171;
     --radius: 16px;
     --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-    --sans: "Space Grotesk", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    --sans: "Instrument Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+    --display: "Fraunces", ui-serif, Georgia, serif;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
@@ -64,7 +65,7 @@
   /* Header */
   .top { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; padding: 4px 0 2px; }
   .brand { text-align: center; line-height: 1.1; }
-  .logo { font-weight: 700; font-size: 26px; letter-spacing: -0.03em; display: inline-flex; align-items: center; gap: 8px; }
+  .logo { font-family: var(--display); font-weight: 800; font-size: 28px; letter-spacing: -0.02em; font-variation-settings: "opsz" 72; display: inline-flex; align-items: center; gap: 8px; }
   .logo-mark { width: 20px; height: 20px; border-radius: 50%; border: 3px solid var(--accent); display: inline-grid; place-items: center; }
   .logo-mark::after { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
   .meta { display: block; font-size: 12px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 4px; font-family: var(--mono); }
@@ -92,8 +93,8 @@
   }
   .target-label { font-size: 12px; text-transform: uppercase; letter-spacing: .14em; color: var(--muted); }
   .target {
-    font-family: var(--mono); font-weight: 800; font-size: clamp(52px, 15vw, 72px); line-height: 1;
-    letter-spacing: -0.04em; color: var(--accent); margin-top: 4px;
+    font-family: var(--display); font-weight: 900; font-size: clamp(56px, 16vw, 80px); line-height: 1;
+    letter-spacing: -0.03em; font-variation-settings: "opsz" 144; font-variant-numeric: lining-nums tabular-nums; color: var(--accent); margin-top: 4px;
     text-shadow: 0 0 40px rgba(198, 243, 107, .25);
   }
   .target-side { position: relative; text-align: right; display: grid; gap: 10px; justify-items: end; }
@@ -119,7 +120,7 @@
   .row-expr { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; font-family: var(--mono); font-size: 15px; min-width: 0; }
   .row-hint { font-size: 13px; color: var(--dim); }
   .row-right { display: flex; align-items: center; gap: 8px; }
-  .row-val { font-family: var(--mono); font-weight: 700; font-size: 17px; }
+  .row-val { font-family: var(--display); font-weight: 700; font-size: 19px; font-variant-numeric: lining-nums tabular-nums; }
   .badge {
     font-size: 12px; font-weight: 600; padding: 5px 8px; border-radius: 999px; white-space: nowrap;
     border: 1px solid transparent;
@@ -162,10 +163,11 @@
   .formula.ready .formula-status { color: var(--accent); }
   .formula.error .formula-status { color: var(--danger); }
 
-  .numbers { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+  .numbers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
   .tile {
     position: relative; height: 62px; border-radius: 14px;
-    font-family: var(--mono); font-weight: 800; font-size: 22px;
+    font-family: var(--display); font-weight: 700; font-size: 26px; font-variation-settings: "opsz" 48;
+    font-variant-numeric: lining-nums;
     background: linear-gradient(180deg, #252a36, #1c2029);
     border: 1px solid var(--line-2);
     box-shadow: 0 3px 0 #0c0d12, inset 0 1px 0 rgba(255,255,255,.06);
@@ -173,7 +175,6 @@
   }
   .tile:not(:disabled):hover { border-color: #49506a; }
   .tile:not(:disabled):active { transform: translateY(3px); box-shadow: 0 0 0 #0c0d12, inset 0 1px 0 rgba(255,255,255,.06); }
-  .tile.big { color: #f5f7fb; background: linear-gradient(180deg, #2c3242, #222735); }
   .tile:disabled:not(.used) { opacity: .5; }
   .tile.used {
     background: rgba(198, 243, 107, .08); border-color: rgba(198, 243, 107, .55); color: var(--accent);
@@ -219,7 +220,7 @@
     border-radius: 18px; border: 1px solid var(--line); background: var(--panel);
     padding: 16px; display: grid; gap: 12px; text-align: center;
   }
-  .finished h2 { margin: 0; font-size: 20px; letter-spacing: -0.01em; }
+  .finished h2 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 22px; letter-spacing: -0.01em; }
   .finished p { margin: 0; color: var(--muted); font-size: 14px; }
 
   /* Modal */
@@ -236,7 +237,7 @@
     animation: pop .28s cubic-bezier(.2, .9, .3, 1.2);
   }
   @keyframes pop { from { transform: translateY(14px) scale(.97); opacity: 0; } }
-  .modal h2 { margin: 0 0 6px; font-size: 24px; letter-spacing: -0.02em; }
+  .modal h2 { margin: 0 0 6px; font-family: var(--display); font-weight: 700; font-size: 28px; letter-spacing: -0.015em; font-variation-settings: "opsz" 72; }
   .modal h3 { margin: 18px 0 10px; font-size: 12px; text-transform: uppercase; letter-spacing: .14em; color: var(--muted); font-weight: 600; }
   .modal p, .modal li { color: #c3c7d2; font-size: 14.5px; line-height: 1.55; }
   .modal ul { padding-left: 18px; margin: 8px 0; }
@@ -254,7 +255,7 @@
     font-family: var(--mono); font-size: 13.5px; line-height: 1.5; white-space: pre-wrap; color: var(--text);
   }
   .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; text-align: center; }
-  .stat b { display: block; font-family: var(--mono); font-size: 26px; font-weight: 800; }
+  .stat b { display: block; font-family: var(--display); font-size: 30px; font-weight: 800; font-variant-numeric: lining-nums tabular-nums; }
   .stat span { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
   .dist { display: grid; gap: 5px; }
   .dist-row { display: grid; grid-template-columns: 16px 1fr; align-items: center; gap: 8px; font-family: var(--mono); font-size: 13px; color: var(--muted); }
@@ -263,7 +264,7 @@
   .modal-footer { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px; align-items: center; }
   .countdown { text-align: left; }
   .countdown span { display: block; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .12em; }
-  .countdown b { font-family: var(--mono); font-size: 24px; }
+  .countdown b { font-family: var(--display); font-weight: 700; font-size: 26px; font-variant-numeric: lining-nums tabular-nums; }
   .legend { display: grid; gap: 8px; margin: 10px 0; }
   .legend-item { display: grid; grid-template-columns: 32px 1fr; gap: 10px; align-items: center; font-size: 14px; color: #c3c7d2; }
   .legend-item .sw { width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; font-size: 16px; }
@@ -287,8 +288,7 @@
 
   @media (max-width: 420px) {
     .app { padding-left: 12px; padding-right: 12px; gap: 12px; }
-    .numbers { grid-template-columns: repeat(3, 1fr); }
-    .tile { height: 56px; font-size: 22px; }
+    .tile { height: 56px; font-size: 24px; }
     .op { height: 48px; }
     .row { grid-template-columns: 20px 1fr auto; gap: 8px; padding-left: 8px; }
     .row-right { flex-direction: column; align-items: flex-end; gap: 4px; }
@@ -359,17 +359,17 @@
   <div class="modal">
     <button class="close-x" data-close aria-label="Close">✕</button>
     <h2 id="helpTitle">How to play</h2>
-    <p>Hit the <b style="color:var(--accent)">target</b> using the six numbers and <b>+ − × ÷</b>. You get six tries, and there's a new puzzle every day.</p>
+    <p>Hit the <b style="color:var(--accent)">target</b> using the four numbers and <b>+ − × ÷</b>. You get six tries, and there's a new puzzle every day.</p>
     <ul>
-      <li>Use any of the six numbers, but each one <b>only once</b> per try.</li>
+      <li>Use <b>all four numbers</b>, each one <b>exactly once</b> per try.</li>
       <li>Use brackets to control the order of operations.</li>
       <li>Division has to come out to a whole number at every step.</li>
-      <li>No negative numbers along the way.</li>
+      <li>Every step must stay positive: no zero or negative results.</li>
     </ul>
     <h3>Example</h3>
     <div class="example">
-      <span class="sym paren">(</span><span class="chip">75</span><span class="sym">+</span><span class="chip">6</span><span class="sym paren">)</span><span class="sym">×</span><span class="chip">4</span><span class="sym">−</span><span class="chip">2</span>
-      <span class="sym">=</span><b style="font-family:var(--mono)">322</b>
+      <span class="sym paren">(</span><span class="chip">8</span><span class="sym">×</span><span class="chip">7</span><span class="sym">−</span><span class="chip">4</span><span class="sym paren">)</span><span class="sym">×</span><span class="chip">6</span>
+      <span class="sym">=</span><b style="font-family:var(--display)">312</b>
     </div>
     <h3>Feedback</h3>
     <div class="legend">
@@ -415,6 +415,7 @@
 
   /* ---------- Constants & helpers ---------- */
   const MAX_ROWS = 6;
+  const TILE_COUNT = 4; // numbers per puzzle; every one must be used
   const LAUNCH_DATE = "2026-10-24"; // Puzzle #1
   const STORE_PREFIX = "operand:v1:";
   const $ = (id) => document.getElementById(id);
@@ -460,60 +461,76 @@
   }
 
   /* ---------- Daily puzzle generation ----------
-     Numbers follow the Countdown recipe: a few "large" numbers from
-     {25, 50, 75, 100} and the rest from two decks of 1–10. The target is
-     built by randomly combining a subset of the numbers with valid
-     operations, so every daily puzzle is guaranteed to be solvable. */
+     Four numbers from 2–12 are drawn one at a time, each value equally likely
+     (no 1s, so there are no free "× 1" moves). 2–6 can repeat any number of
+     times; 7–12 can appear at most twice. Every value reachable by combining *all four* with
+     rule-valid operations is enumerated, along with how many distinct ways
+     reach it. The target is picked from the rarest values under 500, so every
+     puzzle is solvable but has very few routes. */
+  const GEN_CAP = 10000; // ignore intermediates above this while enumerating
+  const PICK_FROM = 40;  // choose among this many hardest targets
   function generatePuzzle(dateStr) {
     const rand = mulberry32(xmur3("operand:" + dateStr)());
-    const shuffle = (arr) => {
-      const a = arr.slice();
-      for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(rand() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]];
+    const numbers = [];
+    while (numbers.length < TILE_COUNT) {
+      const avail = [];
+      for (let n = 2; n <= 12; n++) {
+        if (n <= 6 || numbers.filter((x) => x === n).length < 2) avail.push(n);
       }
-      return a;
-    };
-    const r = rand();
-    const nLarge = r < 0.45 ? 1 : r < 0.85 ? 2 : 3;
-    const larges = shuffle([25, 50, 75, 100]).slice(0, nLarge);
-    const smallDeck = [];
-    for (let n = 1; n <= 10; n++) smallDeck.push(n, n);
-    const smalls = shuffle(smallDeck).slice(0, 6 - nLarge);
-    const numbers = [...smalls.sort((a, b) => a - b), ...larges.sort((a, b) => a - b)];
-
-    let fallback = null;
-    for (let tries = 0; tries < 6000; tries++) {
-      const order = shuffle([0, 1, 2, 3, 4, 5]);
-      const k = 3 + Math.floor(rand() * 4); // use 3–6 numbers
-      let val = numbers[order[0]];
-      let expr = String(val);
-      for (let j = 1; j < k; j++) {
-        const n = numbers[order[j]];
-        const moves = [];
-        moves.push(() => [val + n, `${expr} + ${n}`]);
-        if (val - n > 0) moves.push(() => [val - n, `${expr} − ${n}`]);
-        if (n - val > 0) moves.push(() => [n - val, `${n} − (${expr})`]);
-        if (n > 1 && val > 1) moves.push(() => [val * n, `(${expr}) × ${n}`], () => [val * n, `(${expr}) × ${n}`]);
-        if (n > 1 && val % n === 0) moves.push(() => [val / n, `(${expr}) ÷ ${n}`]);
-        if (val > 1 && n % val === 0 && n !== val) moves.push(() => [n / val, `${n} ÷ (${expr})`]);
-        [val, expr] = moves[Math.floor(rand() * moves.length)]();
-      }
-      if (val < 100 || val > 999 || numbers.includes(val)) continue;
-      const solution = tidy(expr);
-      if (val % 25 === 0 && rand() < 0.8) { fallback = fallback || { target: val, solution }; continue; }
-      return { numbers, target: val, solution };
+      numbers.push(avail[Math.floor(rand() * avail.length)]);
     }
-    if (fallback) return { numbers, ...fallback };
-    // Practically unreachable: guaranteed-valid fallback.
-    const [a, b, c] = numbers.slice(3);
-    return { numbers, target: a * c + b, solution: `${a} × ${c} + ${b}` };
+    numbers.sort((a, b) => a - b);
+
+    // ways[mask]: value → number of expressions using exactly those tiles
+    // how[mask]:  value → one way to build it [leftMask, leftVal, op, rightMask, rightVal]
+    const FULL = (1 << TILE_COUNT) - 1;
+    const ways = Array.from({ length: FULL + 1 }, () => new Map());
+    const how = Array.from({ length: FULL + 1 }, () => new Map());
+    numbers.forEach((n, i) => ways[1 << i].set(n, 1));
+    const bits = (m) => { let c = 0; for (; m; m >>= 1) c += m & 1; return c; };
+    const masks = Array.from({ length: FULL }, (_, i) => i + 1).sort((a, b) => bits(a) - bits(b));
+    for (const m of masks) {
+      if (bits(m) < 2) continue;
+      const W = ways[m], H = how[m];
+      const add = (v, c, rec) => {
+        if (v <= 0 || v > GEN_CAP) return;
+        const prev = W.get(v);
+        if (prev === undefined) { W.set(v, c); H.set(v, rec); } else W.set(v, prev + c);
+      };
+      for (let a = (m - 1) & m; a > 0; a = (a - 1) & m) {
+        const b = m ^ a;
+        if (a < b) continue; // each unordered split once
+        for (const [x, cx] of ways[a]) for (const [y, cy] of ways[b]) {
+          const c = cx * cy;
+          add(x + y, c, [a, x, "+", b, y]);
+          if (x > 1 && y > 1) add(x * y, c, [a, x, "*", b, y]);
+          if (x > y) add(x - y, c, [a, x, "-", b, y]);
+          else if (y > x) add(y - x, c, [b, y, "-", a, x]);
+          if (y > 1 && x % y === 0) add(x / y, c, [a, x, "/", b, y]);
+          if (x > 1 && y % x === 0 && x !== y) add(y / x, c, [b, y, "/", a, x]);
+        }
+      }
+    }
+
+    let cands = [...ways[FULL]].filter(([v]) => v <= 499);
+    // Practically unreachable: fall back to any result.
+    if (!cands.length) cands = [...ways[FULL]];
+    cands.sort((p, q) => p[1] - q[1] || p[0] - q[0]);
+    const pool = cands.slice(0, PICK_FROM);
+    const target = pool[Math.floor(rand() * pool.length)][0];
+    return { numbers, target, solution: exprString(how, FULL, target).s };
   }
-  // Drop redundant brackets around a single number, e.g. "(7) × 3" → "7 × 3"
-  function tidy(expr) {
-    let prev;
-    do { prev = expr; expr = expr.replace(/\((\d+)\)/g, "$1"); } while (expr !== prev);
-    return expr;
+  // Rebuild a stored derivation with only the brackets precedence needs.
+  const PREC = { "+": 1, "-": 1, "*": 2, "/": 2 };
+  function exprString(how, mask, value) {
+    const rec = how[mask].get(value);
+    if (!rec) return { s: String(value), p: 3 };
+    const [lm, lv, op, rm, rv] = rec;
+    const L = exprString(how, lm, lv), R = exprString(how, rm, rv);
+    const p = PREC[op];
+    const ls = L.p < p ? `(${L.s})` : L.s;
+    const rs = R.p < p || (R.p === p && (op === "-" || op === "/")) ? `(${R.s})` : R.s;
+    return { s: `${ls} ${OP_DISPLAY[op]} ${rs}`, p };
   }
 
   /* ---------- Expression evaluation ----------
@@ -528,7 +545,7 @@
       switch (op) {
         case "+": return l + r;
         case "-":
-          if (r > l) throw new RuleError(`${l} − ${r} goes negative`);
+          if (r >= l) throw new RuleError(`${l} − ${r} isn't positive`);
           return l - r;
         case "*": return l * r;
         case "/":
@@ -587,7 +604,10 @@
   const PUZZLE_NO = puzzleNumber(TODAY);
   const P = generatePuzzle(TODAY);
   const TOLERANCE = Math.max(10, Math.round(P.target * 0.05));
-  let game = store.get("game:" + TODAY, null) || { attempts: [], status: "playing", counted: false };
+  // Bumped whenever the puzzle recipe changes, since old saves index different tiles
+  // (v2: "use all six"; v3: unlimited repeats of 2–6; v4: targets under 500; v5: four numbers)
+  const GAME_KEY = "game:v5:" + TODAY;
+  let game = store.get(GAME_KEY, null) || { attempts: [], status: "playing", counted: false };
   let stats = store.get("stats", defaultStats());
   let tokens = [];
   let lastAddedRow = -1;
@@ -604,15 +624,20 @@
     const last = tokens[tokens.length - 1];
     const afterValue = !!last && (last.t === "n" || last.t === "rp");
     const playing = game.status === "playing";
+    const used = new Set(tokens.filter((t) => t.t === "n").map((t) => t.i));
+    const left = P.numbers.length - used.size;
     return {
       depth,
-      used: new Set(tokens.filter((t) => t.t === "n").map((t) => t.i)),
+      used,
+      left,
       canNum: playing && !afterValue,
       canOp: playing && afterValue,
       canLp: playing && !afterValue,
       canRp: playing && afterValue && depth > 0,
-      complete: tokens.length > 0 && afterValue && depth === 0,
-      reason: !tokens.length ? "Build an expression first" : depth > 0 && afterValue ? "Close your brackets" : "Finish the expression",
+      complete: tokens.length > 0 && afterValue && depth === 0 && left === 0,
+      reason: !tokens.length ? "Build an expression first"
+        : depth > 0 && afterValue ? "Close your brackets"
+        : left > 0 ? `Use all four numbers (${left} left)` : "Finish the expression",
     };
   }
 
@@ -632,7 +657,7 @@
     $("target").textContent = P.target;
 
     $("numbers").innerHTML = P.numbers.map((n, i) =>
-      `<button class="tile${n >= 25 ? " big" : ""}" data-i="${i}" aria-label="Number ${n}">${n}</button>`).join("");
+      `<button class="tile" data-i="${i}" aria-label="Number ${n}">${n}</button>`).join("");
     const ops = [["+", "op"], ["-", "op"], ["*", "op"], ["/", "op"], ["(", "lp"], [")", "rp"]];
     $("ops").innerHTML = ops.map(([v, t]) =>
       `<button class="op${t !== "op" ? " paren" : ""}" data-t="${t}" data-v="${v}" aria-label="${t === "op" ? OP_DISPLAY[v] : v}">${t === "op" ? OP_DISPLAY[v] : v}</button>`).join("");
@@ -695,9 +720,12 @@
       try { evaluate(tokens, P.numbers); status = "✓ Looks good. Submit when you're ready."; cls = "ready"; }
       catch (e) { status = e.message; cls = "error"; }
     } else if (tokens.length) {
-      status = st.depth > 0 ? `${st.depth} open bracket${st.depth > 1 ? "s" : ""}` : "Keep going…";
+      const parts = [];
+      if (st.left) parts.push(`${st.left} number${st.left > 1 ? "s" : ""} left`);
+      if (st.depth) parts.push(`${st.depth} open bracket${st.depth > 1 ? "s" : ""}`);
+      status = parts.join(" · ") || "Keep going…";
     } else {
-      status = `Close counts if you're within ${TOLERANCE} of the target`;
+      status = `Use all four numbers. Close counts within ${TOLERANCE} of the target`;
     }
     f.classList.toggle("ready", cls === "ready");
     f.classList.toggle("error", cls === "error");
@@ -760,7 +788,7 @@
     else if (game.attempts.length >= MAX_ROWS) game.status = "lost";
 
     if (game.status !== "playing" && !game.counted) recordStats();
-    store.set("game:" + TODAY, game);
+    store.set(GAME_KEY, game);
     render();
 
     if (game.status === "won") {
@@ -801,7 +829,7 @@
     for (const a of game.attempts) {
       const usedCount = a.tokens.filter((t) => t.t === "n").length;
       const sq = a.kind === "exact" ? "🟩" : a.kind === "close" ? "🟨" : "🟦";
-      const squares = sq.repeat(usedCount) + "⬛".repeat(6 - usedCount);
+      const squares = sq.repeat(usedCount) + "⬛".repeat(TILE_COUNT - usedCount);
       lines.push(`${squares} ${a.kind === "exact" ? "🎯" : fmtSigned(a.diff, "-")}`);
     }
     lines.push("", location.origin + location.pathname.replace(/index\.html$/, ""));
