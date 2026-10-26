@@ -13,6 +13,7 @@ Each day everyone gets the same four small numbers (2–12; 2–6 can repeat any
 - **Feedback on every try.** Exact, close (within 10 points or 5%, whichever is larger), or far, each with the signed distance.
 - **Tap-to-build expression builder.** It includes Undo, Clear and Submit, plus full keyboard support.
 - **Shareable emoji grid**, along with stats, streaks, a solve distribution, and a countdown to the next puzzle.
+- **Puzzle wheel.** A half-wheel dial tucked against the left edge picks between puzzles. Drag, scroll or use the arrow keys to spin it; it coasts and snaps to a slice, then fires a `puzzleselect` event. On narrow screens it hides behind a "Puzzles" tab. Only Operdle is playable right now; the other slices show a coming-soon card.
 - **Progress saved in `localStorage`**, so a refresh doesn't lose today's game.
 
 ## Tech
