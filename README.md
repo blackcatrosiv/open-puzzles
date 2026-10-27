@@ -2,7 +2,7 @@
 
 Open-Puzzles is a daily math puzzle site in the spirit of Wordle and the Countdown numbers game. 
 
-# Operdle: 
+## Operdle: 
 
 Each day everyone gets the same four small numbers (2–12; 2–6 can repeat any number of times, 7–12 at most twice) and the same target under 500. Players have six tries to build an arithmetic expression (+ − × ÷ and brackets) that uses all four numbers and hits the target exactly. 
 
@@ -13,8 +13,15 @@ Each day everyone gets the same four small numbers (2–12; 2–6 can repeat any
 - **Feedback on every try.** Exact, close (within 10 points or 5%, whichever is larger), or far, each with the signed distance.
 - **Tap-to-build expression builder.** It includes Undo, Clear and Submit, plus full keyboard support.
 - **Shareable emoji grid**, along with stats, streaks, a solve distribution, and a countdown to the next puzzle.
-- **Puzzle wheel.** A half-wheel dial tucked against the left edge picks between puzzles. Drag, scroll or use the arrow keys to spin it; it coasts and snaps to a slice, then fires a `puzzleselect` event. On narrow screens it hides behind a "Puzzles" tab. Only Operdle is playable right now; the other slices show a coming-soon card.
 - **Progress saved in `localStorage`**, so a refresh doesn't lose today's game.
+
+## Mental Math
+
+WIP: Everyday everyone gets the same mental math problems, seperated into three categories (hard computation, "gimmicky" computation, and manual entry (Sundays)) Players are scored on how fast they solve the question, irrespective of accuracy. 
+
+## Features
+
+- **Deterministic daily puzzle.** The local date (`YYYY-MM-DD`) seeds a Mulberry32 PRNG, so every player sees the same problem everyday. 
 
 ## Tech
 
