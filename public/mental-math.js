@@ -130,7 +130,7 @@
   function showPlaying() {
     el("mmIntroActions").classList.add("hidden"); el("mmPlay").classList.remove("hidden"); el("mmResult").classList.add("hidden");
     el("mmMeta").textContent = state.problem.title + " · Track " + state.problem.track + " · " + currentDate;
-    el("mmTrack").textContent = state.problem.track === "A" ? "JUST HARD" : "CLEVER & SATISFYING";
+    el("mmTrack").textContent = state.problem.track === "A" ? "" : "";
     el("mmQuestion").textContent = state.problem.prompt;
     el("mmAttempts").textContent = state.attempts + (state.attempts === 1 ? " attempt" : " attempts");
     el("mmFeedback").textContent = state.attempts ? "Keep going. Your timer is still running." : "";
