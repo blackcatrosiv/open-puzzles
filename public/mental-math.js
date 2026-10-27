@@ -123,7 +123,7 @@
     interval = setInterval(() => { if (today() !== currentDate) { activate(); return; } paintClock(); }, 50);
   }
   function showIntro(problem) {
-    el("mmIntro").textContent = "One problem a day. The clock starts when you begin and keeps running until you enter the correct answer.";
+    el("mmIntro").textContent = "One problem a day - come back Sundays for an interesting problem. Clock starts when you begin and keeps running until the correct answer.";
     el("mmMeta").textContent = problem.title + " · Track " + problem.track + " · " + currentDate;
     el("mmIntroActions").classList.remove("hidden"); el("mmPlay").classList.add("hidden"); el("mmResult").classList.add("hidden");
   }
@@ -171,7 +171,7 @@
     } else {
       state.attempts += 1; saveGame();
       el("mmAttempts").textContent = state.attempts + (state.attempts === 1 ? " attempt" : " attempts");
-      el("mmFeedback").textContent = "Not quite. Try again — the clock keeps running."; el("mmAnswer").select();
+      el("mmFeedback").textContent = "Not quite! Try again, the clock is running. "; el("mmAnswer").select();
     }
   }
   el("mmStart").addEventListener("click", startChallenge);
@@ -186,7 +186,7 @@
     .then((data) => { bank = Array.isArray(data) ? data : (data.problems || []); if (active) activate(); })
     .catch((error) => {
       console.error("[Mental Math] Curated bank failed to load:", error);
-      if (active && weekday(currentDate) === 0) showLoadError("Sunday's curated challenge could not be loaded. Check the curated JSON file and refresh.");
+      if (active && weekday(currentDate) === 0) showLoadError("Sunday's challenge could not be loaded. Check the curated JSON file and refresh.");
       else if (active) activate();
     });
 })();
