@@ -103,7 +103,7 @@
     '<h1 id="mmTitle">Mental Math</h1><p class="mm-intro" id="mmIntro"></p><div class="mm-meta" id="mmMeta"></div>',
     '<div class="mm-intro-actions" id="mmIntroActions"><button class="btn primary mm-start" id="mmStart" type="button">Start Challenge</button></div>',
     '<section class="mm-play hidden" id="mmPlay" aria-live="polite"><div class="mm-clock" id="mmClock" aria-label="Elapsed time">0:00.00</div>',
-    '<div class="mm-track" id="mmTrack"></div><div class="mm-question" id="mmQuestion"></div>',
+    '<div class="mm-question" id="mmQuestion"></div>',
     '<form class="mm-answer-form" id="mmAnswerForm"><label class="mm-label" for="mmAnswer">Your answer</label>',
     '<div class="mm-answer-row"><input id="mmAnswer" name="answer" type="text" inputmode="decimal" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="mmFeedback" />',
     '<button class="btn primary" id="mmSubmit" type="submit">Check</button></div></form>',
@@ -130,7 +130,6 @@
   function showPlaying() {
     el("mmIntroActions").classList.add("hidden"); el("mmPlay").classList.remove("hidden"); el("mmResult").classList.add("hidden");
     el("mmMeta").textContent = state.problem.title + " · Track " + state.problem.track + " · " + currentDate;
-    el("mmTrack").textContent = state.problem.track === "A" ? "" : "";
     el("mmQuestion").textContent = state.problem.prompt;
     el("mmAttempts").textContent = state.attempts + (state.attempts === 1 ? " attempt" : " attempts");
     el("mmFeedback").textContent = state.attempts ? "Keep going. Your timer is still running." : "";
