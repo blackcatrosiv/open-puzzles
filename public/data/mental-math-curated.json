@@ -1,0 +1,9 @@
+{
+  "problems": [
+    {"id":"sunday-001","enabled":true,"title":"Sunday selection","prompt":"Calculate 48 × 25 mentally.","answer":1200,"explanation":"25 is one quarter of 100, so 48 × 25 = 48 × 100 ÷ 4."},
+    {"id":"sunday-002","enabled":true,"title":"Sunday selection","prompt":"What is 12.5% of 640?","answer":80,"explanation":"12.5% is one eighth. 640 ÷ 8 = 80."},
+    {"id":"sunday-003","enabled":true,"title":"Sunday selection","prompt":"Calculate 999 × 37 mentally.","answer":36963,"explanation":"Use 1,000 × 37 − 37."},
+    {"id":"sunday-004","enabled":true,"title":"Sunday selection","prompt":"Calculate 125 × 32 mentally.","answer":4000,"explanation":"125 × 8 = 1,000, and 32 = 8 × 4."},
+    {"id":"sunday-005","enabled":true,"title":"Sunday selection","prompt":"What is 35% of 240?","answer":84,"explanation":"30% of 240 is 72; 5% is 12; together they make 84."}
+  ]
+}

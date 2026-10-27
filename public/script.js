@@ -524,7 +524,7 @@
   // geometry is in the SVG's 640-unit viewBox with the pivot at (0, 0).
   const PUZZLES = [
     { id: "operdle", name: "Operdle", glyph: "±", color: "#c6f36b", live: true },
-    { id: "mental-math", name: "Mental Math", glyph: "×", color: "#ff7a59", blurb: "Rapid-fire arithmetic against the clock. How many can you clear in sixty seconds?" },
+    { id: "mental-math", name: "Mental Math", glyph: "×", color: "#ff7a59", live: true, blurb: "One daily mental-math challenge. Start the clock when you are ready." },
     { id: "tbd-1", name: "TBD", glyph: "?", color: "#a78bfa", kicker: "Under construction", title: "Hard hats on", blurb: "Something clever is being bolted together back here. Mind the loose numbers on your way out." },
     { id: "tbd-2", name: "TBD", glyph: "?", color: "#38bdf8", kicker: "Still brewing", title: "Puzzle loading…", blurb: "…at roughly the speed of a kettle you're staring at. Check back soon." },
     { id: "tbd-3", name: "TBD", glyph: "?", color: "#fbbf24", kicker: "Top secret", title: "Classified", blurb: "This slot is reserved for a puzzle so good we can't talk about it yet. (We also haven't made it.)" },
