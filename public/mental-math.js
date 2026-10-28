@@ -1,3 +1,5 @@
+import { confetti } from "./operdle.js";
+
 (() => {
   "use strict";
   const STORE = "mental-math:v1:game:";
@@ -115,6 +117,7 @@
 
   let bank = [], currentDate = today(), state = null, interval = null, active = false;
   const el = (id) => document.getElementById(id);
+  
   function stopClock() { if (interval) clearInterval(interval); interval = null; }
   function elapsed() { return state.status === "complete" ? state.elapsedMs : Math.max(0, Date.now() - state.startedAt); }
   function paintClock() { if (state && state.status === "playing") el("mmClock").textContent = formatTime(elapsed()); }
@@ -166,7 +169,7 @@
     const raw = el("mmAnswer").value.trim().replace(/,/g, "");
     if (!raw || !Number.isFinite(Number(raw))) { el("mmFeedback").textContent = "Enter a number to check."; el("mmAnswer").focus(); return; }
     if (Number(raw) === state.problem.answer) {
-      state.status = "complete"; state.completedAt = Date.now(); state.elapsedMs = Math.max(0, state.completedAt - state.startedAt); saveGame(); showComplete();
+      state.status = "complete"; state.completedAt = Date.now(); state.elapsedMs = Math.max(0, state.completedAt - state.startedAt); saveGame(); showComplete(); confetti();
     } else {
       state.attempts += 1; saveGame();
       el("mmAttempts").textContent = state.attempts + (state.attempts === 1 ? " attempt" : " attempts");

@@ -1,3 +1,22 @@
+export function confetti() {
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const wrap = document.createElement("div");
+  wrap.className = "confetti";
+  const colors = ["#c6f36b", "#4ade80", "#fbbf24", "#38bdf8", "#f472b6", "#e8eaf0"];
+  for (let i = 0; i < 90; i++) {
+    const p = document.createElement("i");
+    p.style.left = Math.random() * 100 + "vw";
+    p.style.background = colors[i % colors.length];
+    p.style.setProperty("--dx", (Math.random() * 200 - 100) + "px");
+    p.style.setProperty("--rot", (Math.random() * 900 - 450) + "deg");
+    p.style.animationDuration = 1.8 + Math.random() * 1.6 + "s";
+    p.style.animationDelay = Math.random() * 0.4 + "s";
+    wrap.appendChild(p);
+  }
+  document.body.appendChild(wrap);
+  setTimeout(() => wrap.remove(), 4200);
+}
+
 (() => {
   "use strict";
 
@@ -500,25 +519,6 @@
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => t.classList.remove("show"), 1800);
   }
-  function confetti() {
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const wrap = document.createElement("div");
-    wrap.className = "confetti";
-    const colors = ["#c6f36b", "#4ade80", "#fbbf24", "#38bdf8", "#f472b6", "#e8eaf0"];
-    for (let i = 0; i < 90; i++) {
-      const p = document.createElement("i");
-      p.style.left = Math.random() * 100 + "vw";
-      p.style.background = colors[i % colors.length];
-      p.style.setProperty("--dx", (Math.random() * 200 - 100) + "px");
-      p.style.setProperty("--rot", (Math.random() * 900 - 450) + "deg");
-      p.style.animationDuration = 1.8 + Math.random() * 1.6 + "s";
-      p.style.animationDelay = Math.random() * 0.4 + "s";
-      wrap.appendChild(p);
-    }
-    document.body.appendChild(wrap);
-    setTimeout(() => wrap.remove(), 4200);
-  }
-
   /* ---------- Puzzle wheel ---------- */
   // Slice i sits at 3 o'clock (in focus) when rot = -i * STEP. Angles are in degrees,
   // geometry is in the SVG's 640-unit viewBox with the pivot at (0, 0).
