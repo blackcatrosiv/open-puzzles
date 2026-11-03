@@ -1,4 +1,4 @@
-import { confetti } from "./operdle.js";
+import { confetti } from "../operdle/operdle.js";
 
 (() => {
   "use strict";
@@ -241,7 +241,7 @@ import { confetti } from "./operdle.js";
     if (event.key === STORE + currentDate && active) activate();
     if (active && !el("mmStatsDialog").classList.contains("hidden")) renderStatistics();
   });
-  fetch("data/mental-math-curated.json", { cache: "no-store" })
+  fetch(new URL("../../data/mental-math-curated.json", import.meta.url), { cache: "no-store" })
     .then((response) => { if (!response.ok) throw new Error("Could not load the Sunday problem bank."); return response.json(); })
     .then((data) => { bank = Array.isArray(data) ? data : (data.problems || []); if (active) activate(); })
     .catch((error) => {
