@@ -45,7 +45,7 @@ import { confetti } from "./operdle.js";
       a = int(r, 24, 79); b = int(r, 16, 39); c = int(r, 12, 29);
       prompt = "Calculate mentally: (" + a + " + " + b + ") × " + c; answer = (a + b) * c;
     }
-    return { id: "hard-" + date, track: "A", title: "Just Hard", prompt, answer, explanation: null };
+    return { id: "hard-" + date, title: "Just Hard", prompt, answer, explanation: null };
   }
   function cleverProblem(date) {
     const r = rngFor("mental-math:clever:v1:" + date);
@@ -68,7 +68,7 @@ import { confetti } from "./operdle.js";
       n = int(r, 160, 360); base = Math.floor(n / 20) * 20; prompt = "What is 15% of " + base + "?"; answer = base * 0.15;
       title = "Percent split"; explanation = "15% is 10% plus 5%: find one tenth, then add half of that.";
     }
-    return { id: "clever-" + date, track: "B", title, prompt, answer, explanation };
+    return { id: "clever-" + date, title, prompt, answer, explanation };
   }
   function dailyProblem(date, bank) {
     const day = weekday(date);
@@ -77,7 +77,7 @@ import { confetti } from "./operdle.js";
       if (!enabled.length) throw new Error("Add at least one enabled Sunday problem to data/mental-math-curated.json.");
       const week = Math.floor(utcDay(date) / 604800000);
       const item = enabled[((week % enabled.length) + enabled.length) % enabled.length];
-      return { id: "curated-" + (item.id || week) + "-" + date, track: "B", title: item.title || "Sunday selection",
+      return { id: "curated-" + (item.id || week) + "-" + date, title: item.title || "Sunday selection",
         prompt: item.prompt, answer: Number(item.answer), explanation: item.explanation || null };
     }
     return [1, 3, 5].includes(day) ? hardProblem(date) : cleverProblem(date);
@@ -101,7 +101,7 @@ import { confetti } from "./operdle.js";
   screen.id = "mentalMathScreen"; screen.className = "mental-screen hidden";
   screen.setAttribute("aria-labelledby", "mmTitle");
   screen.innerHTML = [
-    '<section class="mm-card"><div class="mm-kicker">DAILY CHALLENGE</div>',
+    '<section class="mm-card"><div class="mm-heading"><div class="mm-kicker">DAILY CHALLENGE</div><button class="icon-btn" id="mmStatsBtn" type="button" aria-label="Statistics" aria-haspopup="dialog" aria-controls="mmStatsDialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 20V11M12 20V4M19 20v-6"/></svg></button></div>',
     '<h1 id="mmTitle">Mental Math</h1><p class="mm-intro" id="mmIntro"></p><div class="mm-meta" id="mmMeta"></div>',
     '<div class="mm-intro-actions" id="mmIntroActions"><button class="btn primary mm-start" id="mmStart" type="button">Start Challenge</button></div>',
     '<section class="mm-play hidden" id="mmPlay" aria-live="polite"><div class="mm-clock" id="mmClock" aria-label="Elapsed time">0:00.00</div>',
@@ -111,7 +111,13 @@ import { confetti } from "./operdle.js";
     '<button class="btn primary" id="mmSubmit" type="submit">Check</button></div></form>',
     '<p class="mm-feedback" id="mmFeedback" role="status" aria-live="polite"></p><p class="mm-attempts" id="mmAttempts"></p></section>',
     '<section class="mm-result hidden" id="mmResult" aria-live="polite"><div class="mm-result-label">CHALLENGE COMPLETE</div>',
-    '<div class="mm-final-time" id="mmFinalTime"></div><p id="mmResultText"></p><div class="mm-explanation hidden" id="mmExplanation"></div></section></section>'
+    '<div class="mm-final-time" id="mmFinalTime"></div><p id="mmResultText"></p><div class="mm-explanation hidden" id="mmExplanation"></div></section></section>',
+    '<div class="backdrop hidden" id="mmStatsDialog" role="dialog" aria-modal="true" aria-labelledby="mmStatsTitle">',
+    '<div class="modal mm-stats-modal"><button class="close-x" id="mmStatsClose" type="button" aria-label="Close statistics">✕</button>',
+    '<h2 id="mmStatsTitle">Statistics</h2><div class="mm-stats-grid">',
+    '<div class="mm-stat"><b id="mmPlayed">0</b><span>Played</span></div>',
+    '<div class="mm-stat"><b id="mmAverage">—</b><span>Average solve time</span></div></div>',
+    '<p class="mm-stats-note" id="mmStatsNote" role="status">Played counts challenges started. Average solve time includes completed challenges.</p></div></div>'
   ].join("");
   document.body.appendChild(screen);
 
@@ -121,18 +127,59 @@ import { confetti } from "./operdle.js";
   function stopClock() { if (interval) clearInterval(interval); interval = null; }
   function elapsed() { return state.status === "complete" ? state.elapsedMs : Math.max(0, Date.now() - state.startedAt); }
   function paintClock() { if (state && state.status === "playing") el("mmClock").textContent = formatTime(elapsed()); }
+  function getStatistics() {
+    let played = 0, solved = 0, totalTime = 0;
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith(STORE)) continue;
+      const date = key.slice(STORE.length);
+      try {
+        const game = JSON.parse(localStorage.getItem(key) || "null");
+        if (!game || game.date !== date) continue;
+        if (game.status === "playing" || game.status === "complete") played++;
+        if (game.status === "complete" && Number.isFinite(game.elapsedMs) && game.elapsedMs >= 0) {
+          solved++; totalTime += game.elapsedMs;
+        }
+      } catch (error) {
+        console.error("[Mental Math] Could not read a saved challenge for statistics:", error);
+      }
+    }
+    return { played, averageTime: solved ? totalTime / solved : null };
+  }
+  function renderStatistics() {
+    try {
+      const stats = getStatistics();
+      el("mmPlayed").textContent = String(stats.played);
+      el("mmAverage").textContent = stats.averageTime === null ? "—" : formatTime(stats.averageTime);
+      el("mmStatsNote").textContent = "Played counts challenges started. Average solve time includes completed challenges.";
+    } catch (error) {
+      console.error("[Mental Math] Statistics could not be loaded:", error);
+      el("mmPlayed").textContent = "—";
+      el("mmAverage").textContent = "—";
+      el("mmStatsNote").textContent = "Statistics could not be loaded from browser storage.";
+    }
+  }
+  function closeStatistics() {
+    el("mmStatsDialog").classList.add("hidden");
+    el("mmStatsBtn").focus();
+  }
+  function openStatistics() {
+    renderStatistics();
+    el("mmStatsDialog").classList.remove("hidden");
+    el("mmStatsClose").focus();
+  }
   function startClock() {
     stopClock(); paintClock();
     interval = setInterval(() => { if (today() !== currentDate) { activate(); return; } paintClock(); }, 50);
   }
   function showIntro(problem) {
     el("mmIntro").textContent = "One problem a day - come back Sundays for an interesting problem. Clock starts when you begin and keeps running until the correct answer.";
-    el("mmMeta").textContent = problem.title + " · Track " + problem.track + " · " + currentDate;
+    el("mmMeta").textContent = problem.title + " · " + currentDate;
     el("mmIntroActions").classList.remove("hidden"); el("mmPlay").classList.add("hidden"); el("mmResult").classList.add("hidden");
   }
   function showPlaying() {
     el("mmIntroActions").classList.add("hidden"); el("mmPlay").classList.remove("hidden"); el("mmResult").classList.add("hidden");
-    el("mmMeta").textContent = state.problem.title + " · Track " + state.problem.track + " · " + currentDate;
+    el("mmMeta").textContent = state.problem.title + " · " + currentDate;
     el("mmQuestion").textContent = state.problem.prompt;
     el("mmAttempts").textContent = state.attempts + (state.attempts === 1 ? " attempt" : " attempts");
     el("mmFeedback").textContent = state.attempts ? "Keep going. Your timer is still running." : "";
@@ -178,11 +225,22 @@ import { confetti } from "./operdle.js";
   }
   el("mmStart").addEventListener("click", startChallenge);
   el("mmAnswerForm").addEventListener("submit", submitAnswer);
+  el("mmStatsBtn").addEventListener("click", openStatistics);
+  el("mmStatsClose").addEventListener("click", closeStatistics);
+  el("mmStatsDialog").addEventListener("click", (event) => {
+    if (event.target === el("mmStatsDialog")) closeStatistics();
+  });
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !el("mmStatsDialog").classList.contains("hidden")) closeStatistics();
+  });
   wheel.addEventListener("puzzleselect", (event) => {
     active = !!(event.detail && event.detail.id === "mental-math"); screen.classList.toggle("hidden", !active);
-    if (active) { app.classList.add("hidden"); soon.classList.add("hidden"); activate(); } else stopClock();
+    if (active) { app.classList.add("hidden"); soon.classList.add("hidden"); activate(); } else { stopClock(); el("mmStatsDialog").classList.add("hidden"); }
   });
-  window.addEventListener("storage", (event) => { if (event.key === STORE + currentDate && active) activate(); });
+  window.addEventListener("storage", (event) => {
+    if (event.key === STORE + currentDate && active) activate();
+    if (active && !el("mmStatsDialog").classList.contains("hidden")) renderStatistics();
+  });
   fetch("data/mental-math-curated.json", { cache: "no-store" })
     .then((response) => { if (!response.ok) throw new Error("Could not load the Sunday problem bank."); return response.json(); })
     .then((data) => { bank = Array.isArray(data) ? data : (data.problems || []); if (active) activate(); })
